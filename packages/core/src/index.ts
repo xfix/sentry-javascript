@@ -1,3 +1,14 @@
+export type { APIDetails } from './api';
+export type { BackendClass } from './basebackend';
+export type { ClientClass } from './sdk';
+export type {
+  BaseTransportOptions,
+  NewTransport,
+  TransportMakeRequestResponse,
+  TransportRequest,
+  TransportRequestExecutor,
+} from './transports/base';
+
 export {
   addBreadcrumb,
   captureException,
@@ -15,7 +26,6 @@ export {
 } from '@sentry/minimal';
 export { addGlobalEventProcessor, getCurrentHub, getHubFromCarrier, Hub, makeMain, Scope, Session } from '@sentry/hub';
 export {
-  APIDetails,
   getEnvelopeEndpointWithUrlEncodedAuth,
   getStoreEndpointWithUrlEncodedAuth,
   getRequestHeaders,
@@ -23,18 +33,12 @@ export {
   getReportDialogEndpoint,
 } from './api';
 export { BaseClient } from './baseclient';
-export { BackendClass, BaseBackend } from './basebackend';
+export { BaseBackend } from './basebackend';
 export { eventToSentryRequest, sessionToSentryRequest } from './request';
-export { initAndBind, ClientClass } from './sdk';
+export { initAndBind } from './sdk';
 export { NoopTransport } from './transports/noop';
-export {
-  BaseTransportOptions,
-  createTransport,
-  NewTransport,
-  TransportMakeRequestResponse,
-  TransportRequest,
-  TransportRequestExecutor,
-} from './transports/base';
+export { createTransport } from './transports/base';
+
 export { SDK_VERSION } from './version';
 
 import * as Integrations from './integrations';
