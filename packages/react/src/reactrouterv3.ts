@@ -19,7 +19,7 @@ export type Match = (
   cb: (error?: Error, _redirectLocation?: Location, renderProps?: { routes?: Route[] }) => void,
 ) => void;
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /**
  * Creates routing instrumentation for React Router v3
@@ -43,8 +43,8 @@ export function reactRouterV3Instrumentation(
     let prevName: string | undefined;
 
     // Have to use global.location because history.location might not be defined.
-    if (startTransactionOnPageLoad && global && global.location) {
-      normalizeTransactionName(routes, global.location as unknown as Location, match, (localName: string) => {
+    if (startTransactionOnPageLoad && globalObj && globalObj.location) {
+      normalizeTransactionName(routes, globalObj.location as unknown as Location, match, (localName: string) => {
         prevName = localName;
         activeTransaction = startTransaction({
           name: prevName,

@@ -11,7 +11,7 @@ import { fill } from './object';
 import { getFunctionName } from './stacktrace';
 import { supportsHistory, supportsNativeFetch } from './supports';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 type InstrumentHandlerType =
   | 'console'
@@ -106,22 +106,22 @@ function triggerHandlers(type: InstrumentHandlerType, data: any): void {
 
 /** JSDoc */
 function instrumentConsole(): void {
-  if (!('console' in global)) {
+  if (!('console' in globalObj)) {
     return;
   }
 
   CONSOLE_LEVELS.forEach(function (level: string): void {
-    if (!(level in global.console)) {
+    if (!(level in globalObj.console)) {
       return;
     }
 
-    fill(global.console, level, function (originalConsoleMethod: () => any): Function {
+    fill(globalObj.console, level, function (originalConsoleMethod: () => any): Function {
       return function (...args: any[]): void {
         triggerHandlers('console', { args, level });
 
         // this fails for some browsers. :(
         if (originalConsoleMethod) {
-          originalConsoleMethod.apply(global.console, args);
+          originalConsoleMethod.apply(globalObj.console, args);
         }
       };
     });
@@ -134,7 +134,7 @@ function instrumentFetch(): void {
     return;
   }
 
-  fill(global, 'fetch', function (originalFetch: () => void): () => void {
+  fill(globalObj, 'fetch', function (originalFetch: () => void): () => void {
     return function (...args: any[]): void {
       const handlerData = {
         args,
@@ -150,7 +150,7 @@ function instrumentFetch(): void {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      return originalFetch.apply(global, args).then(
+      return originalFetch.apply(globalObj, args).then(
         (response: Response) => {
           triggerHandlers('fetch', {
             ...handlerData,
@@ -191,7 +191,7 @@ interface SentryWrappedXMLHttpRequest extends XMLHttpRequest {
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /** Extract `method` from fetch call arguments */
 function getFetchMethod(fetchArgs: any[] = []): string {
-  if ('Request' in global && isInstanceOf(fetchArgs[0], Request) && fetchArgs[0].method) {
+  if ('Request' in globalObj && isInstanceOf(fetchArgs[0], Request) && fetchArgs[0].method) {
     return String(fetchArgs[0].method).toUpperCase();
   }
   if (fetchArgs[1] && fetchArgs[1].method) {
@@ -205,7 +205,7 @@ function getFetchUrl(fetchArgs: any[] = []): string {
   if (typeof fetchArgs[0] === 'string') {
     return fetchArgs[0];
   }
-  if ('Request' in global && isInstanceOf(fetchArgs[0], Request)) {
+  if ('Request' in globalObj && isInstanceOf(fetchArgs[0], Request)) {
     return fetchArgs[0].url;
   }
   return String(fetchArgs[0]);
@@ -214,7 +214,7 @@ function getFetchUrl(fetchArgs: any[] = []): string {
 
 /** JSDoc */
 function instrumentXHR(): void {
-  if (!('XMLHttpRequest' in global)) {
+  if (!('XMLHttpRequest' in globalObj)) {
     return;
   }
 
@@ -296,9 +296,9 @@ function instrumentHistory(): void {
     return;
   }
 
-  const oldOnPopState = global.onpopstate;
-  global.onpopstate = function (this: WindowEventHandlers, ...args: any[]): any {
-    const to = global.location.href;
+  const oldOnPopState = globalObj.onpopstate;
+  globalObj.onpopstate = function (this: WindowEventHandlers, ...args: any[]): any {
+    const to = globalObj.location.href;
     // keep track of the current URL state, as we always receive only the updated state
     const from = lastHref;
     lastHref = to;
@@ -337,8 +337,8 @@ function instrumentHistory(): void {
     };
   }
 
-  fill(global.history, 'pushState', historyReplacementFunction);
-  fill(global.history, 'replaceState', historyReplacementFunction);
+  fill(globalObj.history, 'pushState', historyReplacementFunction);
+  fill(globalObj.history, 'replaceState', historyReplacementFunction);
 }
 
 const debounceDuration = 1000;
@@ -453,7 +453,7 @@ function makeDOMEventHandler(handler: Function, globalListener: boolean = false)
 
     // Start a new debounce timer that will prevent us from capturing multiple events that should be grouped together.
     clearTimeout(debounceTimerID);
-    debounceTimerID = global.setTimeout(() => {
+    debounceTimerID = globalObj.setTimeout(() => {
       debounceTimerID = undefined;
     }, debounceDuration);
   };
@@ -482,7 +482,7 @@ type InstrumentedElement = Element & {
 
 /** JSDoc */
 function instrumentDOM(): void {
-  if (!('document' in global)) {
+  if (!('document' in globalObj)) {
     return;
   }
 
@@ -491,8 +491,8 @@ function instrumentDOM(): void {
   // we instrument `addEventListener` so that we don't end up attaching this handler twice.
   const triggerDOMHandler = triggerHandlers.bind(null, 'dom');
   const globalDOMEventHandler = makeDOMEventHandler(triggerDOMHandler, true);
-  global.document.addEventListener('click', globalDOMEventHandler, false);
-  global.document.addEventListener('keypress', globalDOMEventHandler, false);
+  globalObj.document.addEventListener('click', globalDOMEventHandler, false);
+  globalObj.document.addEventListener('keypress', globalDOMEventHandler, false);
 
   // After hooking into click and keypress events bubbled up to `document`, we also hook into user-handled
   // clicks & keypresses, by adding an event listener of our own to any element to which they add a listener. That
@@ -501,7 +501,7 @@ function instrumentDOM(): void {
   // guaranteed to fire at least once.)
   ['EventTarget', 'Node'].forEach((target: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const proto = (global as any)[target] && (global as any)[target].prototype;
+    const proto = (globalObj as any)[target] && (globalObj as any)[target].prototype;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
     if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {
       return;
@@ -583,9 +583,9 @@ function instrumentDOM(): void {
 let _oldOnErrorHandler: OnErrorEventHandler = null;
 /** JSDoc */
 function instrumentError(): void {
-  _oldOnErrorHandler = global.onerror;
+  _oldOnErrorHandler = globalObj.onerror;
 
-  global.onerror = function (msg: any, url: any, line: any, column: any, error: any): boolean {
+  globalObj.onerror = function (msg: any, url: any, line: any, column: any, error: any): boolean {
     triggerHandlers('error', {
       column,
       error,
@@ -606,9 +606,9 @@ function instrumentError(): void {
 let _oldOnUnhandledRejectionHandler: ((e: any) => void) | null = null;
 /** JSDoc */
 function instrumentUnhandledRejection(): void {
-  _oldOnUnhandledRejectionHandler = global.onunhandledrejection;
+  _oldOnUnhandledRejectionHandler = globalObj.onunhandledrejection;
 
-  global.onunhandledrejection = function (e: any): boolean {
+  globalObj.onunhandledrejection = function (e: any): boolean {
     triggerHandlers('unhandledrejection', e);
 
     if (_oldOnUnhandledRejectionHandler) {

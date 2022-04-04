@@ -1,7 +1,7 @@
 import { Transaction, TransactionContext } from '@sentry/types';
 import { addInstrumentationHandler, getGlobalObject, isDebugBuild, logger } from '@sentry/utils';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /**
  * Default function implementing pageload and navigation transactions
@@ -11,16 +11,16 @@ export function instrumentRoutingWithDefaults<T extends Transaction>(
   startTransactionOnPageLoad: boolean = true,
   startTransactionOnLocationChange: boolean = true,
 ): void {
-  if (!global || !global.location) {
+  if (!globalObj || !globalObj.location) {
     isDebugBuild() && logger.warn('Could not initialize routing instrumentation due to invalid location');
     return;
   }
 
-  let startingUrl: string | undefined = global.location.href;
+  let startingUrl: string | undefined = globalObj.location.href;
 
   let activeTransaction: T | undefined;
   if (startTransactionOnPageLoad) {
-    activeTransaction = customStartTransaction({ name: global.location.pathname, op: 'pageload' });
+    activeTransaction = customStartTransaction({ name: globalObj.location.pathname, op: 'pageload' });
   }
 
   if (startTransactionOnLocationChange) {
@@ -46,7 +46,7 @@ export function instrumentRoutingWithDefaults<T extends Transaction>(
           // If there's an open transaction on the scope, we need to finish it before creating an new one.
           activeTransaction.finish();
         }
-        activeTransaction = customStartTransaction({ name: global.location.pathname, op: 'navigation' });
+        activeTransaction = customStartTransaction({ name: globalObj.location.pathname, op: 'navigation' });
       }
     });
   }

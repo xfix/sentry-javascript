@@ -10,10 +10,10 @@ import { NextjsOptions } from '../src/utils/nextjsOptions';
 
 const { Integrations } = SentryNode;
 
-const global = getGlobalObject();
+const globalObj = getGlobalObject();
 
 // normally this is set as part of the build process, so mock it here
-(global as typeof global & { __rewriteFramesDistDir__: string }).__rewriteFramesDistDir__ = '.next';
+(globalObj as typeof globalObj & { __rewriteFramesDistDir__: string }).__rewriteFramesDistDir__ = '.next';
 
 const nodeInit = jest.spyOn(SentryNode, 'init');
 const logError = jest.spyOn(logger, 'error');
@@ -21,7 +21,7 @@ const logError = jest.spyOn(logger, 'error');
 describe('Server init()', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    global.__SENTRY__.hub = undefined;
+    globalObj.__SENTRY__.hub = undefined;
     delete process.env.VERCEL;
   });
 

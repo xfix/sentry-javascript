@@ -89,18 +89,18 @@ export function supportsNativeFetch(): boolean {
     return false;
   }
 
-  const global = getGlobalObject<Window>();
+  const globalObj = getGlobalObject<Window>();
 
   // Fast path to avoid DOM I/O
   // eslint-disable-next-line @typescript-eslint/unbound-method
-  if (isNativeFetch(global.fetch)) {
+  if (isNativeFetch(globalObj.fetch)) {
     return true;
   }
 
   // window.fetch is implemented, but is polyfilled or already wrapped (e.g: by a chrome extension)
   // so create a "pure" iframe to see if that has native fetch
   let result = false;
-  const doc = global.document;
+  const doc = globalObj.document;
   // eslint-disable-next-line deprecation/deprecation
   if (doc && typeof (doc.createElement as unknown) === 'function') {
     try {
@@ -167,13 +167,13 @@ export function supportsHistory(): boolean {
   // NOTE: in Chrome App environment, touching history.pushState, *even inside
   //       a try/catch block*, will cause Chrome to output an error to console.error
   // borrowed from: https://github.com/angular/angular.js/pull/13945/files
-  const global = getGlobalObject<Window>();
+  const globalObj = getGlobalObject<Window>();
   /* eslint-disable @typescript-eslint/no-unsafe-member-access */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chrome = (global as any).chrome;
+  const chrome = (globalObj as any).chrome;
   const isChromePackagedApp = chrome && chrome.app && chrome.app.runtime;
   /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-  const hasHistoryApi = 'history' in global && !!global.history.pushState && !!global.history.replaceState;
+  const hasHistoryApi = 'history' in globalObj && !!globalObj.history.pushState && !!globalObj.history.replaceState;
 
   return !isChromePackagedApp && hasHistoryApi;
 }

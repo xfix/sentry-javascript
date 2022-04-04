@@ -13,7 +13,7 @@ let instrumentationInitialized: boolean;
 let stashedStartTransaction: (context: TransactionContext) => Transaction | undefined;
 let stashedStartTransactionOnLocationChange: boolean;
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /**
  * Creates routing instrumentation for Angular Router.
@@ -27,9 +27,9 @@ export function routingInstrumentation(
   stashedStartTransaction = customStartTransaction;
   stashedStartTransactionOnLocationChange = startTransactionOnLocationChange;
 
-  if (startTransactionOnPageLoad && global && global.location) {
+  if (startTransactionOnPageLoad && globalObj && globalObj.location) {
     customStartTransaction({
-      name: global.location.pathname,
+      name: globalObj.location.pathname,
       op: 'pageload',
     });
   }

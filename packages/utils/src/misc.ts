@@ -18,8 +18,8 @@ interface MsCryptoWindow extends Window {
  * @returns string Generated UUID4.
  */
 export function uuid4(): string {
-  const global = getGlobalObject() as MsCryptoWindow;
-  const crypto = global.crypto || global.msCrypto;
+  const globalObj = getGlobalObject() as MsCryptoWindow;
+  const crypto = globalObj.crypto || globalObj.msCrypto;
 
   if (!(crypto === void 0) && crypto.getRandomValues) {
     // Use window.crypto API if available

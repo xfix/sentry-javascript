@@ -19,7 +19,7 @@ import { getLCP, LargestContentfulPaint } from './web-vitals/getLCP';
 import { getVisibilityWatcher } from './web-vitals/lib/getVisibilityWatcher';
 import { NavigatorDeviceMemory, NavigatorNetworkInformation } from './web-vitals/types';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /** Class tracking metrics  */
 export class MetricsInstrumentation {
@@ -30,9 +30,9 @@ export class MetricsInstrumentation {
   private _clsEntry: LayoutShift | undefined;
 
   public constructor(private _reportAllChanges: boolean = false) {
-    if (!isNodeEnv() && global && global.performance && global.document) {
-      if (global.performance.mark) {
-        global.performance.mark('sentry-tracing-init');
+    if (!isNodeEnv() && globalObj && globalObj.performance && globalObj.document) {
+      if (globalObj.performance.mark) {
+        globalObj.performance.mark('sentry-tracing-init');
       }
 
       this._trackCLS();
@@ -43,7 +43,7 @@ export class MetricsInstrumentation {
 
   /** Add performance related spans to a transaction */
   public addPerformanceEntries(transaction: Transaction): void {
-    if (!global || !global.performance || !global.performance.getEntries || !browserPerformanceTimeOrigin) {
+    if (!globalObj || !globalObj.performance || !globalObj.performance.getEntries || !browserPerformanceTimeOrigin) {
       // Gatekeeper if performance API not available
       return;
     }
@@ -55,7 +55,7 @@ export class MetricsInstrumentation {
     let responseStartTimestamp: number | undefined;
     let requestStartTimestamp: number | undefined;
 
-    global.performance
+    globalObj.performance
       .getEntries()
       .slice(this._performanceCursor)
       .forEach((entry: Record<string, any>) => {
@@ -98,7 +98,7 @@ export class MetricsInstrumentation {
             break;
           }
           case 'resource': {
-            const resourceName = (entry.name as string).replace(global.location.origin, '');
+            const resourceName = (entry.name as string).replace(globalObj.location.origin, '');
             addResourceSpans(transaction, entry, resourceName, startTime, duration, timeOrigin);
             break;
           }
@@ -178,7 +178,7 @@ export class MetricsInstrumentation {
    * Capture the information of the user agent.
    */
   private _trackNavigator(transaction: Transaction): void {
-    const navigator = global.navigator as null | (Navigator & NavigatorNetworkInformation & NavigatorDeviceMemory);
+    const navigator = globalObj.navigator as null | (Navigator & NavigatorNetworkInformation & NavigatorDeviceMemory);
     if (!navigator) {
       return;
     }

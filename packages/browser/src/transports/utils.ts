@@ -1,6 +1,6 @@
 import { forget, getGlobalObject, isDebugBuild, isNativeFetch, logger, supportsFetch } from '@sentry/utils';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 let cachedFetchImpl: FetchImpl;
 
 export type FetchImpl = typeof fetch;
@@ -51,12 +51,12 @@ export function getNativeFetchImplementation(): FetchImpl {
   /* eslint-disable @typescript-eslint/unbound-method */
 
   // Fast path to avoid DOM I/O
-  if (isNativeFetch(global.fetch)) {
-    return (cachedFetchImpl = global.fetch.bind(global));
+  if (isNativeFetch(globalObj.fetch)) {
+    return (cachedFetchImpl = globalObj.fetch.bind(globalObj));
   }
 
-  const document = global.document;
-  let fetchImpl = global.fetch;
+  const document = globalObj.document;
+  let fetchImpl = globalObj.fetch;
   // eslint-disable-next-line deprecation/deprecation
   if (document && typeof document.createElement === 'function') {
     try {
@@ -74,7 +74,7 @@ export function getNativeFetchImplementation(): FetchImpl {
     }
   }
 
-  return (cachedFetchImpl = fetchImpl.bind(global));
+  return (cachedFetchImpl = fetchImpl.bind(globalObj));
   /* eslint-enable @typescript-eslint/unbound-method */
 }
 
@@ -85,12 +85,12 @@ export function getNativeFetchImplementation(): FetchImpl {
  * @param body report payload
  */
 export function sendReport(url: string, body: string): void {
-  const isRealNavigator = Object.prototype.toString.call(global && global.navigator) === '[object Navigator]';
-  const hasSendBeacon = isRealNavigator && typeof global.navigator.sendBeacon === 'function';
+  const isRealNavigator = Object.prototype.toString.call(globalObj && globalObj.navigator) === '[object Navigator]';
+  const hasSendBeacon = isRealNavigator && typeof globalObj.navigator.sendBeacon === 'function';
 
   if (hasSendBeacon) {
     // Prevent illegal invocations - https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-    const sendBeacon = global.navigator.sendBeacon.bind(global.navigator);
+    const sendBeacon = globalObj.navigator.sendBeacon.bind(globalObj.navigator);
     return sendBeacon(url, body);
   }
 

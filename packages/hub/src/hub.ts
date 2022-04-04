@@ -444,8 +444,8 @@ export class Hub implements HubInterface {
     const { release, environment } = (client && client.getOptions()) || {};
 
     // Will fetch userAgent if called from browser sdk
-    const global = getGlobalObject<{ navigator?: { userAgent?: string } }>();
-    const { userAgent } = global.navigator || {};
+    const globalObj = getGlobalObject<{ navigator?: { userAgent?: string } }>();
+    const { userAgent } = globalObj.navigator || {};
 
     const session = new Session({
       release,

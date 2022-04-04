@@ -261,10 +261,10 @@ function _fetchBreadcrumb(handlerData: { [key: string]: any }): void {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _historyBreadcrumb(handlerData: { [key: string]: any }): void {
-  const global = getGlobalObject<Window>();
+  const globalObj = getGlobalObject<Window>();
   let from = handlerData.from;
   let to = handlerData.to;
-  const parsedLoc = parseUrl(global.location.href);
+  const parsedLoc = parseUrl(globalObj.location.href);
   let parsedFrom = parseUrl(from);
   const parsedTo = parseUrl(to);
 

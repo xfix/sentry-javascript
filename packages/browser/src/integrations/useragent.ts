@@ -2,7 +2,7 @@ import { addGlobalEventProcessor, getCurrentHub } from '@sentry/core';
 import { Event, Integration } from '@sentry/types';
 import { getGlobalObject } from '@sentry/utils';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /** UserAgent */
 export class UserAgent implements Integration {
@@ -23,14 +23,14 @@ export class UserAgent implements Integration {
     addGlobalEventProcessor((event: Event) => {
       if (getCurrentHub().getIntegration(UserAgent)) {
         // if none of the information we want exists, don't bother
-        if (!global.navigator && !global.location && !global.document) {
+        if (!globalObj.navigator && !globalObj.location && !globalObj.document) {
           return event;
         }
 
         // grab as much info as exists and add it to the event
-        const url = (event.request && event.request.url) || (global.location && global.location.href);
-        const { referrer } = global.document || {};
-        const { userAgent } = global.navigator || {};
+        const url = (event.request && event.request.url) || (globalObj.location && globalObj.location.href);
+        const { referrer } = globalObj.document || {};
+        const { userAgent } = globalObj.navigator || {};
 
         const headers = {
           ...(event.request && event.request.headers),

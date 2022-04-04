@@ -10,7 +10,7 @@ import { NextjsOptions } from '../src/utils/nextjsOptions';
 
 const { BrowserTracing } = TracingIntegrations;
 
-const global = getGlobalObject();
+const globalObj = getGlobalObject();
 
 const reactInit = jest.spyOn(SentryReact, 'init');
 const captureEvent = jest.spyOn(BaseClient.prototype, 'captureEvent');
@@ -19,7 +19,7 @@ const logError = jest.spyOn(logger, 'error');
 describe('Client init()', () => {
   afterEach(() => {
     jest.clearAllMocks();
-    global.__SENTRY__.hub = undefined;
+    globalObj.__SENTRY__.hub = undefined;
   });
 
   it('inits the React SDK', () => {

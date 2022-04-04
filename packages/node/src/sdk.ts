@@ -198,9 +198,9 @@ export function getSentryRelease(fallback?: string): string | undefined {
   }
 
   // This supports the variable that sentry-webpack-plugin injects
-  const global = getGlobalObject();
-  if (global.SENTRY_RELEASE && global.SENTRY_RELEASE.id) {
-    return global.SENTRY_RELEASE.id;
+  const globalObj = getGlobalObject();
+  if (globalObj.SENTRY_RELEASE && globalObj.SENTRY_RELEASE.id) {
+    return globalObj.SENTRY_RELEASE.id;
   }
 
   return (

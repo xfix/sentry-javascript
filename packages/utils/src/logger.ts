@@ -5,7 +5,7 @@ import { isDebugBuild } from './env';
 import { getGlobalObject } from './global';
 
 // TODO: Implement different loggers for different environments
-const global = getGlobalObject<Window | NodeJS.Global>();
+const globalObj = getGlobalObject<Window | NodeJS.Global>();
 
 /** Prefix for logging strings */
 const PREFIX = 'Sentry Logger ';
@@ -25,20 +25,20 @@ interface ExtensibleConsole extends Console {
  * @returns The results of the callback
  */
 export function consoleSandbox(callback: () => any): any {
-  const global = getGlobalObject<Window>();
+  const globalObj = getGlobalObject<Window>();
 
-  if (!('console' in global)) {
+  if (!('console' in globalObj)) {
     return callback();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const originalConsole = (global as any).console as ExtensibleConsole;
+  const originalConsole = (globalObj as any).console as ExtensibleConsole;
   const wrappedLevels: { [key: string]: any } = {};
 
   // Restore all wrapped console methods
   CONSOLE_LEVELS.forEach(level => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (level in (global as any).console && (originalConsole[level] as WrappedFunction).__sentry_original__) {
+    if (level in (globalObj as any).console && (originalConsole[level] as WrappedFunction).__sentry_original__) {
       wrappedLevels[level] = originalConsole[level] as WrappedFunction;
       originalConsole[level] = (originalConsole[level] as WrappedFunction).__sentry_original__;
     }
@@ -81,7 +81,7 @@ class Logger {
       return;
     }
     consoleSandbox(() => {
-      global.console.log(`${PREFIX}[Log]:`, ...args);
+      globalObj.console.log(`${PREFIX}[Log]:`, ...args);
     });
   }
 
@@ -91,7 +91,7 @@ class Logger {
       return;
     }
     consoleSandbox(() => {
-      global.console.warn(`${PREFIX}[Warn]:`, ...args);
+      globalObj.console.warn(`${PREFIX}[Warn]:`, ...args);
     });
   }
 
@@ -101,18 +101,18 @@ class Logger {
       return;
     }
     consoleSandbox(() => {
-      global.console.error(`${PREFIX}[Error]:`, ...args);
+      globalObj.console.error(`${PREFIX}[Error]:`, ...args);
     });
   }
 }
 
-const sentryGlobal = global.__SENTRY__ || {};
+const sentryGlobal = globalObj.__SENTRY__ || {};
 const logger = (sentryGlobal.logger as Logger) || new Logger();
 
 if (isDebugBuild()) {
   // Ensure we only have a single logger instance, even if multiple versions of @sentry/utils are being used
   sentryGlobal.logger = logger;
-  global.__SENTRY__ = sentryGlobal;
+  globalObj.__SENTRY__ = sentryGlobal;
 }
 
 export { logger };

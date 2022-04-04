@@ -80,21 +80,21 @@ export class TryCatch implements Integration {
    * and provide better metadata.
    */
   public setupOnce(): void {
-    const global = getGlobalObject();
+    const globalObj = getGlobalObject();
 
     if (this._options.setTimeout) {
-      fill(global, 'setTimeout', _wrapTimeFunction);
+      fill(globalObj, 'setTimeout', _wrapTimeFunction);
     }
 
     if (this._options.setInterval) {
-      fill(global, 'setInterval', _wrapTimeFunction);
+      fill(globalObj, 'setInterval', _wrapTimeFunction);
     }
 
     if (this._options.requestAnimationFrame) {
-      fill(global, 'requestAnimationFrame', _wrapRAF);
+      fill(globalObj, 'requestAnimationFrame', _wrapRAF);
     }
 
-    if (this._options.XMLHttpRequest && 'XMLHttpRequest' in global) {
+    if (this._options.XMLHttpRequest && 'XMLHttpRequest' in globalObj) {
       fill(XMLHttpRequest.prototype, 'send', _wrapXHR);
     }
 
@@ -185,9 +185,9 @@ function _wrapXHR(originalSend: () => void): () => void {
 /** JSDoc */
 function _wrapEventTarget(target: string): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const global = getGlobalObject() as { [key: string]: any };
+  const globalObj = getGlobalObject() as { [key: string]: any };
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const proto = global[target] && global[target].prototype;
+  const proto = globalObj[target] && globalObj[target].prototype;
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, no-prototype-builtins
   if (!proto || !proto.hasOwnProperty || !proto.hasOwnProperty('addEventListener')) {

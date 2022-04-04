@@ -523,10 +523,10 @@ export class Scope implements ScopeInterface {
  */
 function getGlobalEventProcessors(): EventProcessor[] {
   /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access  */
-  const global = getGlobalObject<any>();
-  global.__SENTRY__ = global.__SENTRY__ || {};
-  global.__SENTRY__.globalEventProcessors = global.__SENTRY__.globalEventProcessors || [];
-  return global.__SENTRY__.globalEventProcessors;
+  const globalObj = getGlobalObject<any>();
+  globalObj.__SENTRY__ = globalObj.__SENTRY__ || {};
+  globalObj.__SENTRY__.globalEventProcessors = globalObj.__SENTRY__.globalEventProcessors || [];
+  return globalObj.__SENTRY__.globalEventProcessors;
   /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */
 }
 

@@ -5,17 +5,17 @@ import { IdleTransaction } from '../idletransaction';
 import { SpanStatusType } from '../span';
 import { getActiveTransaction } from '../utils';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /**
  * Add a listener that cancels and finishes a transaction when the global
  * document is hidden.
  */
 export function registerBackgroundTabDetection(): void {
-  if (global && global.document) {
-    global.document.addEventListener('visibilitychange', () => {
+  if (globalObj && globalObj.document) {
+    globalObj.document.addEventListener('visibilitychange', () => {
       const activeTransaction = getActiveTransaction() as IdleTransaction;
-      if (global.document.hidden && activeTransaction) {
+      if (globalObj.document.hidden && activeTransaction) {
         const statusType: SpanStatusType = 'cancelled';
 
         isDebugBuild() &&

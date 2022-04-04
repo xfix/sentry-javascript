@@ -1,7 +1,7 @@
 import { EventProcessor, Hub, Integration } from '@sentry/types';
 import { CONSOLE_LEVELS, fill, getGlobalObject, safeJoin, severityFromString } from '@sentry/utils';
 
-const global = getGlobalObject<Window | NodeJS.Global>();
+const globalObj = getGlobalObject<Window | NodeJS.Global>();
 
 /** Send Console API calls as Sentry Events */
 export class CaptureConsole implements Integration {
@@ -33,17 +33,17 @@ export class CaptureConsole implements Integration {
    * @inheritDoc
    */
   public setupOnce(_: (callback: EventProcessor) => void, getCurrentHub: () => Hub): void {
-    if (!('console' in global)) {
+    if (!('console' in globalObj)) {
       return;
     }
 
     this._levels.forEach((level: string) => {
-      if (!(level in global.console)) {
+      if (!(level in globalObj.console)) {
         return;
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      fill(global.console, level, (originalConsoleMethod: () => any) => (...args: any[]): void => {
+      fill(globalObj.console, level, (originalConsoleMethod: () => any) => (...args: any[]): void => {
         const hub = getCurrentHub();
 
         if (hub.getIntegration(CaptureConsole)) {
@@ -72,7 +72,7 @@ export class CaptureConsole implements Integration {
 
         // this fails for some browsers. :(
         if (originalConsoleMethod) {
-          originalConsoleMethod.apply(global.console, args);
+          originalConsoleMethod.apply(globalObj.console, args);
         }
       });
     });

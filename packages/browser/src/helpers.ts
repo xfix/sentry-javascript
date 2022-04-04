@@ -11,7 +11,7 @@ import {
   markFunctionWrapped,
 } from '@sentry/utils';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 let ignoreOnError: number = 0;
 
 /**
@@ -187,7 +187,7 @@ export interface ReportDialogOptions {
  * @hidden
  */
 export function injectReportDialog(options: ReportDialogOptions = {}): void {
-  if (!global.document) {
+  if (!globalObj.document) {
     return;
   }
 
@@ -201,7 +201,7 @@ export function injectReportDialog(options: ReportDialogOptions = {}): void {
     return;
   }
 
-  const script = global.document.createElement('script');
+  const script = globalObj.document.createElement('script');
   script.async = true;
   script.src = getReportDialogEndpoint(options.dsn, options);
 
@@ -210,7 +210,7 @@ export function injectReportDialog(options: ReportDialogOptions = {}): void {
     script.onload = options.onLoad;
   }
 
-  const injectionPoint = global.document.head || global.document.body;
+  const injectionPoint = globalObj.document.head || globalObj.document.body;
 
   if (injectionPoint) {
     injectionPoint.appendChild(script);

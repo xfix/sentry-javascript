@@ -40,7 +40,7 @@ function requestTypeToCategory(ty: SentryRequestType): string {
   return tyStr === 'event' ? 'error' : tyStr;
 }
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 /** Base Transport class implementation */
 export abstract class BaseTransport implements Transport {
@@ -65,9 +65,9 @@ export abstract class BaseTransport implements Transport {
     // eslint-disable-next-line deprecation/deprecation
     this.url = getStoreEndpointWithUrlEncodedAuth(this._api.dsn);
 
-    if (this.options.sendClientReports && global.document) {
-      global.document.addEventListener('visibilitychange', () => {
-        if (global.document.visibilityState === 'hidden') {
+    if (this.options.sendClientReports && globalObj.document) {
+      globalObj.document.addEventListener('visibilitychange', () => {
+        if (globalObj.document.visibilityState === 'hidden') {
           this._flushOutcomes();
         }
       });

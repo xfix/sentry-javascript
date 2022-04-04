@@ -4,7 +4,7 @@ import { Primitive, Transaction, TransactionContext } from '@sentry/types';
 import { fill, getGlobalObject, stripUrlQueryAndFragment } from '@sentry/utils';
 import { default as Router } from 'next/router';
 
-const global = getGlobalObject<Window>();
+const globalObj = getGlobalObject<Window>();
 
 type StartTransactionCb = (context: TransactionContext) => Transaction | undefined;
 
@@ -35,7 +35,8 @@ export function nextRouterInstrumentation(
     // route name. Setting the transaction name after the transaction is started could lead
     // to possible race conditions with the router, so this approach was taken.
     if (startTransactionOnPageLoad) {
-      prevTransactionName = Router.route !== null ? stripUrlQueryAndFragment(Router.route) : global.location.pathname;
+      prevTransactionName =
+        Router.route !== null ? stripUrlQueryAndFragment(Router.route) : globalObj.location.pathname;
       activeTransaction = startTransactionCb({
         name: prevTransactionName,
         op: 'pageload',
