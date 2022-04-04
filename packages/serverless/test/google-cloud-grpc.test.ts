@@ -124,7 +124,8 @@ describe('GoogleCloudGrpc tracing', () => {
 
     test('publish', async () => {
       mockHttp2Session().mockUnaryRequest(Buffer.from('00000000120a1031363337303834313536363233383630', 'hex'));
-      const resp = await pubsub.topic('nicetopic').publish(Buffer.from('data'));
+      debugger;
+      const resp = await pubsub.topic('nicetopic').publishMessage({ data: Buffer.from('data') });
       expect(resp).toEqual('1637084156623860');
       // @ts-ignore see "Why @ts-ignore" note
       expect(Sentry.fakeTransaction.startChild).toBeCalledWith({
