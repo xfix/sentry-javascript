@@ -9,6 +9,8 @@ Sentry.init({
   tracesSampleRate: 1.0,
 });
 
+console.log({ MONGO_URL: process.env.MONGO_URL });
+
 const client = new MongoClient(process.env.MONGO_URL || '', {
   useUnifiedTopology: true,
 });
