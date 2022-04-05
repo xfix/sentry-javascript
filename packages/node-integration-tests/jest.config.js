@@ -1,3 +1,5 @@
+Error.stackTraceLimit = Infinity;
+
 const config = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
