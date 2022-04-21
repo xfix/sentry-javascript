@@ -1,10 +1,12 @@
 /**
+ * Regex Replace plugin docs: https://github.com/jetiny/rollup-plugin-re
  * Replace plugin docs: https://github.com/rollup/plugins/tree/master/packages/replace
  * Sucrase plugin docs: https://github.com/rollup/plugins/tree/master/packages/sucrase
  */
 
 import * as path from 'path';
 
+import regexReplace from 'rollup-plugin-re';
 import replace from '@rollup/plugin-replace';
 import sucrase from '@rollup/plugin-sucrase';
 
@@ -72,6 +74,49 @@ export function makeWatchDependenciesPlugin(watchPackages) {
       }
     },
   };
+}
+
+/**
+ * TODO!!!!!
+ *
+ * @returns
+ */
+export function makeDebuggerPlugin() {
+  return {
+    name: 'debugger-plugin',
+    transform: () => {
+      // eslint-disable-next-line no-debugger
+      debugger;
+      return null;
+    },
+  };
+}
+
+/**
+ * TODO!!!!
+ *
+ * @returns
+ */
+export function makeRemoveESLintCommentsPlugin() {
+  return regexReplace({
+    patterns: [
+      {
+        test: /\/[/*] eslint-disable.*\n/g,
+        replace: '',
+      },
+    ],
+  });
+}
+
+export function makeRemoveBlankLinesPlugin() {
+  return regexReplace({
+    patterns: [
+      {
+        test: /\n(\n\s*)+\n/g,
+        replace: '\n\n',
+      },
+    ],
+  });
 }
 
 export { makeExtractPolyfillsPlugin } from './extractPolyfillsPlugin.js';
