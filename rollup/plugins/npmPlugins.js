@@ -73,3 +73,5 @@ export function makeWatchDependenciesPlugin(watchPackages) {
     },
   };
 }
+
+export { makeExtractPolyfillsPlugin } from './extractPolyfillsPlugin.js';
