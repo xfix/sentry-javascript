@@ -10,7 +10,7 @@
     // "declaration": false,
     // "declarationMap": false,
 
-    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
     "types": ["node"],
     "noErrorTruncation": true // move me up to @sentry/typescript
   }
