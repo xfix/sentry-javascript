@@ -6,5 +6,6 @@ export default makeNPMConfigVariants(
     // doesn't automatically include it when calculating the module dependency tree.
     entrypoints: ['src/index.server.ts', 'src/index.client.ts', 'src/utils/instrumentServer.ts'],
     externals: ['next/router'],
+    watchPackages: ['integrations', 'node', 'react', 'tracing'],
   }),
 );
