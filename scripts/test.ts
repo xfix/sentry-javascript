@@ -75,7 +75,7 @@ if (nodeMajorVersion <= 10) {
 
     // Finally, it seems older versions of ts-jest need the transformer to be in JS from the start (newer versions will
     // transpile it on their own), so we need to both compile it and change the extension in the filename in our config.
-    run('yarn tsc --skipLibCheck jest/constReplacer.ts');
+    run('yarn tsc --skipLibCheck jest/transformers/constReplacer.ts');
     code = code.replace('constReplacer.ts', 'constReplacer.js');
 
     fs.writeFileSync(path.resolve('jest/jest.config.js'), code);
