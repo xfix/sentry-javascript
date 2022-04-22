@@ -1,9 +1,9 @@
 {
   "extends": "./packages/typescript/tsconfig.json",
 
-  // include scripts here because their TS config isn't package-specific, and they need to be included in a tsconfig
-  // file to be linted
-  "include": ["**/scripts/**/*.ts"],
+  // include scripts and jest helpers here because their TS config isn't package-specific, and they need to be included
+  // in a tsconfig file to be linted
+  "include": ["**/scripts/**/*.ts", "jest/*.ts"],
 
   "compilerOptions": {
     // TODO: turn these on once we switch to only generating types once, using `tsconfig.types.json`
@@ -11,6 +11,9 @@
     // "declarationMap": false,
 
     "skipLibCheck": true,
+    // Setting `commonjs` here is necessary for ts-node to handle files with ESM imports (confusing but true). See
+    // https://github.com/TypeStrong/ts-node/issues/935.
+    "module": "commonjs",
     "types": ["node"],
     "noErrorTruncation": true // move me up to @sentry/typescript
   }
