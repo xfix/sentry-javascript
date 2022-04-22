@@ -3,7 +3,7 @@
 
   // include scripts and jest helpers here because their TS config isn't package-specific, and they need to be included
   // in a tsconfig file to be linted
-  "include": ["**/scripts/**/*.ts", "jest/*.ts"],
+  "include": ["**/scripts/**/*.ts", "jest/*.ts", "jest/transformers/*.ts"],
 
   "compilerOptions": {
     // TODO: turn these on once we switch to only generating types once, using `tsconfig.types.json`

@@ -2,7 +2,7 @@ import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as jestConfig from '../jest/jest.config.js';
+// import * as jestConfig from '../jest/jest.config.js';
 
 /**
  * Run the given shell command, piping the shell process's `stdin`, `stdout`, and `stderr` to that of the current process.
@@ -53,13 +53,15 @@ if (nodeMajorVersion <= 10) {
     // The ts-jest config schema changed between v25 and v26. Because we're about to downgrade to v25, we have to adjust
     // our config to match.
 
-    // run('yarn tsc --allowJs --skipLibCheck --declaration --emitDeclarationOnly jest/jest.config.js');
+    // Loading the existing jest config will error out unless it has an accompanying types file.
+    run('yarn tsc --allowJs --skipLibCheck --declaration --emitDeclarationOnly jest/jest.config.js');
 
+    // Because we're loading this partway through the script, we have to use `require`.
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    // const jestConfig = require('../jest/jest.config.js');
+    const jestConfig = require('../jest/jest.config.js');
 
-    // We need to cast the  new `astTransformers` value to `any` because it violates the implicit schema TS generated
-    // when it loaded the config file.
+    // We need to cast the new `astTransformers` value to `any` because it violates the ts-jest v26+ schema, on which
+    // the types file we generated above is based.
     jestConfig.globals['ts-jest'].astTransformers = jestConfig.globals['ts-jest'].astTransformers.after as any;
 
     // The rest of the fixes we need to make are more easily done on the stringified code
