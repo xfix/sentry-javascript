@@ -22,7 +22,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['*.ts', '*.tsx', '*.d.ts'],
+      files: ['*.ts', '*.tsx', '*.d.ts', 'scripts/**/*.ts'],
       parserOptions: {
         project: ['tsconfig.json'],
       },
@@ -31,14 +31,6 @@ module.exports = {
       files: ['test/**/*.ts', 'test/**/*.tsx'],
       parserOptions: {
         project: ['tsconfig.test.json'],
-      },
-    },
-    {
-      files: ['**/scripts/**/*.ts'],
-      parserOptions: {
-        // since filepaths are relative to the working directory, we need to go back up to reach the repo root level
-        // tsconfig
-        project: ['../../tsconfig.json'],
       },
     },
     {
