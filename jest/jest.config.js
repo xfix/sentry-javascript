@@ -11,11 +11,9 @@ module.exports = {
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.test.json',
-      astTransformers: [
-        {
-          after: ['<rootDir>/../../jest/constReplacer.ts'],
-        },
-      ],
+      astTransformers: {
+        after: ['<rootDir>/../../jest/constReplacer.ts'],
+      },
     },
   },
   testPathIgnorePatterns: ['<rootDir>/build/', '<rootDir>/node_modules/'],
