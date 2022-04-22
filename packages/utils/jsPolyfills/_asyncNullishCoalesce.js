@@ -1,7 +1,2 @@
-exports._asyncNullishCoalesce = async function _asyncNullishCoalesce(lhs, rhsFn) {
-  if (lhs != null) {
-    return lhs;
-  } else {
-    return await rhsFn();
-  }
-};
+// by checking for loose equality to `null`, we catch both `null` and `undefined`
+module.exports._asyncNullishCoalesce = async (lhs, rhsFn) => (lhs != null ? lhs : rhsFn());

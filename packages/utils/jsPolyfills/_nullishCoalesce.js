@@ -1,7 +1,2 @@
-exports._nullishCoalesce = function _nullishCoalesce(lhs, rhsFn) {
-  if (lhs != null) {
-    return lhs;
-  } else {
-    return rhsFn();
-  }
-};
+// by checking for loose equality to `null`, we catch both `null` and `undefined`
+module.exports._nullishCoalesce = (lhs, rhsFn) => (lhs != null ? lhs : rhsFn());

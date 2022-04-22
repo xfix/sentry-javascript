@@ -1,4 +1,4 @@
-exports._optionalChain = function _optionalChain(ops) {
+module.exports._optionalChain = ops => {
   let lastAccessLHS = undefined;
   let value = ops[0];
   let i = 1;
@@ -6,8 +6,10 @@ exports._optionalChain = function _optionalChain(ops) {
     const op = ops[i];
     const fn = ops[i + 1];
     i += 2;
+    // by checking for loose equality to `null`, we catch both `null` and `undefined`
     if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) {
-      return undefined;
+      // really we're meaning to return `undefined` as an actual value here, but it saves bytes not to write it
+      return;
     }
     if (op === 'access' || op === 'optionalAccess') {
       lastAccessLHS = value;
