@@ -71,7 +71,7 @@ if (nodeMajorVersion <= 10) {
     // `process.cwd()` call was replaced with a hard-coded path, which will break as soon as the jest config needs to be
     // used in a different directory than this one. Though it's a little brute-force-y, the easiest way to fix this is
     // just to perform the substitution in reverse.
-    code = code.replace(`rootDir: "${process.cwd()}"`, 'rootDir: process.cwd()');
+    code = code.replace(`"rootDir": "${process.cwd()}"`, 'rootDir: process.cwd()');
 
     // Finally, it seems older versions of ts-jest need the transformer to be in JS from the start (newer versions will
     // transpile it on their own), so we need to both compile it and change the extension in the filename in our config.
