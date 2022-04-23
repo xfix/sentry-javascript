@@ -19,12 +19,18 @@ const POLYFILL_NAMES = new Set([
 ]);
 
 export function makeExtractPolyfillsPlugin() {
+  let moduleFormat;
   return {
     name: 'extractPolyfills',
 
+    options(options) {
+      moduleFormat = options.output[0].format;
+    },
+
     renderChunk(code, chunk) {
+      const sourceFile = chunk.fileName;
       const parserOptions = {
-        sourceFileName: chunk.fileName,
+        sourceFileName: sourceFile,
         // We supply a custom parser which wraps the provided `acorn` parser in order to override the `ecmaVersion` value.
         // See https://github.com/benjamn/recast/issues/578.
         parser: {
@@ -50,20 +56,20 @@ export function makeExtractPolyfillsPlugin() {
       }
 
       console.log(
-        chunk.fileName,
+        sourceFile,
         polyfillNodes.map(node => node.name),
       );
 
-      const polyfillRequireNode = createRequireNode(polyfillNodes);
+      const importOrRequireNode = createImportRequireNode(polyfillNodes, sourceFile, moduleFormat);
 
       // Insert our new `require` node at the top of the file, and then delete the function definitions it's meant to
       // replace (polyfill nodes get marked for deletion in `findPolyfillNodes`)
-      ast.program.body = [polyfillRequireNode, ...ast.program.body.filter(node => !node.shouldDelete)];
+      ast.program.body = [importOrRequireNode, ...ast.program.body.filter(node => !node.shouldDelete)];
 
       // In spite of the name, this doesn't actually print anything - it just stringifies the code, and keeps track of
       // where original nodes end up in order to generate a sourcemap.
       const result = recast.print(ast, {
-        sourceMapName: `${chunk.fileName}.map`,
+        sourceMapName: `${sourceFile}.map`,
       });
 
       return { code: result.code, map: result.map };
@@ -125,32 +131,86 @@ function findPolyfillNodes(ast) {
   });
 }
 
-function createRequireNode(polyfillNodes, currentModule) {
-  const { callExpression, identifier, literal, objectPattern, property, variableDeclaration, variableDeclarator } =
-    recast.types.builders;
+/**
+ * Create a node representing an `import` or `require` statement of the form
+ *
+ *     import { < polyfills > } from '...'
+ * or
+ *     var { < polyfills > } = require('...')
+ *
+ * @param polyfillNodes The nodes from the current version of the code, defining the polyfill functions
+ * @param currentSourceFile The path, relative to `src/`, of the file currently being transpiled
+ * @param moduleFormat Either 'cjs' or 'esm'
+ * @returns A single node which can be subbed in for the polyfill definition nodes
+ */
+function createImportRequireNode(polyfillNodes, currentSourceFile, moduleFormat) {
+  const {
+    callExpression,
+    identifier,
+    importDeclaration,
+    importSpecifier,
+    literal,
+    objectPattern,
+    property,
+    variableDeclaration,
+    variableDeclarator,
+  } = recast.types.builders;
 
-  // since our polyfills live in `@sentry/utils`, if we're importing them there the import path will have to be
+  // since our polyfills live in `@sentry/utils`, if we're importing or requiring them there the path will have to be
   // relative
   const isUtilsPackage = process.cwd().endsWith('packages/utils');
-  const polyfillLocation = isUtilsPackage
-    ? path.relative(path.dirname(currentModule), '../jsPolyfills')
-    : '@sentry/utils/jsPolyfills';
+  const importSource = literal(
+    isUtilsPackage ? path.relative(path.dirname(currentSourceFile), '../jsPolyfills') : '@sentry/utils/jsPolyfills',
+  );
 
-  // create an object property for each function we'll import
-  const destructuredProperties = polyfillNodes.map(node => {
-    const fnName = node.name;
-    return property.from({ kind: 'init', key: identifier(fnName), value: identifier(fnName), shorthand: true });
-  });
+  const importees = polyfillNodes.map(({ name: fnName }) =>
+    moduleFormat === 'esm'
+      ? importSpecifier(identifier(fnName))
+      : property.from({ kind: 'init', key: identifier(fnName), value: identifier(fnName), shorthand: true }),
+  );
 
-  // create the `require` statement which will wrap those properties: `var { <properties> } = require(...)`
-  const requireNode = variableDeclaration('var', [
-    variableDeclarator(
-      objectPattern(destructuredProperties),
-      callExpression(identifier('require'), [literal(polyfillLocation)]),
-    ),
-  ]);
+  const requireFn = identifier('require');
 
-  return requireNode;
+  return moduleFormat === 'esm'
+    ? importDeclaration(importees, importSource)
+    : variableDeclaration('var', [
+        variableDeclarator(objectPattern(importees), callExpression(requireFn, [importSource])),
+      ]);
+
+  // const polyfillLocation = isUtilsPackage
+  //   ? path.relative(path.dirname(currentModule), '../jsPolyfills')
+  //   : '@sentry/utils/jsPolyfills';
+
+  // const importSource = literal(polyfillLocation);
+
+  //   const importees = polyfillNodes.map(node => {
+  //     const fnName = node.name;
+  //
+  //     return format === 'esm'
+  //       ? importSpecifier(identifier(fnName))
+  //       : property.from({ kind: 'init', key: identifier(fnName), value: identifier(fnName), shorthand: true });
+  //   });
+
+  //   if (format === 'cjs') {
+  //     // Create an object property node for each function we'll require.
+  //
+  //     // Create the `require` statement which will wrap those properties:
+  //     //     `var { <properties> } = require(...)`
+  //     const requireNode = variableDeclaration('var', [
+  //       // variableDeclarator(objectPattern(importees), callExpression(identifier('require'), [literal(polyfillLocation)])),
+  //       variableDeclarator(objectPattern(importees), callExpression(identifier('require'), [importSource])),
+  //     ]);
+  //
+  //     return requireNode;
+  //   }
+  //   // esm
+  //   else {
+  //     const importNode = importDeclaration(importees, importSource);
+  //   }
+  //
+  //   // const importNode = importDeclaration([importSpecifier(identifier('dogs'))], literal(polyfillLocation));
+  //
+  //   return importNode;
 
   //   const newNodes = polyfillNodes.map(polyfillNode => {
   //     const fnName = polyfillNode.name;
