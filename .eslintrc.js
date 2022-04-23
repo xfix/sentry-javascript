@@ -22,7 +22,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['*.ts', '*.tsx', '*.d.ts', 'scripts/**/*.ts'],
+      files: ['*.ts', '*.tsx', '*.d.ts', 'jest/**/*.ts', 'scripts/**/*.ts'],
       parserOptions: {
         project: ['tsconfig.json'],
       },
