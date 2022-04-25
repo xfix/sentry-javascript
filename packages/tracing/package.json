@@ -58,6 +58,8 @@
     "extends": "../../package.json"
   },
   "sideEffects": [
+    "./cjs/index.js",
+    "./esm/index.js",
     "./npm/cjs/index.js",
     "./npm/esm/index.js",
     "./src/index.ts"
