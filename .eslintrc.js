@@ -1,6 +1,8 @@
 // Note: All paths are relative to the directory in which eslint is being run, rather than the directory where this file
 // lives
 
+// ESLint config docs: https://eslint.org/docs/user-guide/configuring/
+
 module.exports = {
   root: true,
   env: {
@@ -42,7 +44,7 @@ module.exports = {
       },
     },
     {
-      files: ['scenarios/**', 'rollup/**'],
+      files: ['scenarios/**', 'rollup/**/*.{js,ts}'],
       parserOptions: {
         sourceType: 'module',
       },
