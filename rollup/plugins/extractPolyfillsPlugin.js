@@ -60,7 +60,7 @@ export function makeExtractPolyfillsPlugin() {
         polyfillNodes.map(node => node.name),
       );
 
-      const importOrRequireNode = createImportRequireNode(polyfillNodes, sourceFile, moduleFormat);
+      const importOrRequireNode = createImportOrRequireNode(polyfillNodes, sourceFile, moduleFormat);
 
       // Insert our new `require` node at the top of the file, and then delete the function definitions it's meant to
       // replace (polyfill nodes get marked for deletion in `findPolyfillNodes`)
@@ -143,7 +143,7 @@ function findPolyfillNodes(ast) {
  * @param moduleFormat Either 'cjs' or 'esm'
  * @returns A single node which can be subbed in for the polyfill definition nodes
  */
-function createImportRequireNode(polyfillNodes, currentSourceFile, moduleFormat) {
+function createImportOrRequireNode(polyfillNodes, currentSourceFile, moduleFormat) {
   const {
     callExpression,
     identifier,
@@ -160,7 +160,9 @@ function createImportRequireNode(polyfillNodes, currentSourceFile, moduleFormat)
   // relative
   const isUtilsPackage = process.cwd().endsWith('packages/utils');
   const importSource = literal(
-    isUtilsPackage ? path.relative(path.dirname(currentSourceFile), '../jsPolyfills') : '@sentry/utils/jsPolyfills',
+    isUtilsPackage
+      ? path.relative(path.dirname(currentSourceFile), `../jsPolyfills/${moduleFormat}`)
+      : `@sentry/utils/jsPolyfills/${moduleFormat}`,
   );
 
   const importees = polyfillNodes.map(({ name: fnName }) =>

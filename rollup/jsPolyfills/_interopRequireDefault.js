@@ -10,4 +10,4 @@
  * likely won't ever this the Sucrase version here, it seemed prudent to keep the stub just in case.
  */
 
-module.exports = require('./_interopDefault.js');
+export const _interopRequireDefault = require('./_interopDefault.js');

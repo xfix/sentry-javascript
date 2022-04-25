@@ -1,4 +1,4 @@
-module.exports._createStarExport = obj => {
+export const _createStarExport = obj => {
   Object.keys(obj)
     .filter(key => key !== 'default' && key !== '__esModule')
     .forEach(key => {

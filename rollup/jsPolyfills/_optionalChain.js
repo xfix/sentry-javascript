@@ -1,4 +1,4 @@
-module.exports._asyncOptionalChain = async ops => {
+export const _optionalChain = ops => {
   let lastAccessLHS = undefined;
   let value = ops[0];
   let i = 1;
@@ -13,9 +13,9 @@ module.exports._asyncOptionalChain = async ops => {
     }
     if (op === 'access' || op === 'optionalAccess') {
       lastAccessLHS = value;
-      value = await fn(value);
+      value = fn(value);
     } else if (op === 'call' || op === 'optionalCall') {
-      value = await fn((...args) => value.call(lastAccessLHS, ...args));
+      value = fn((...args) => value.call(lastAccessLHS, ...args));
       lastAccessLHS = undefined;
     }
   }
