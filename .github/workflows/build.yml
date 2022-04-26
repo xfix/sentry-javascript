@@ -255,7 +255,7 @@ jobs:
         env:
           NODE_VERSION: ${{ matrix.node }}
         run: |
-          [[ $NODE_VERSION == 8 ]] && yarn add -DW ts-node@8.x
+          [[ $NODE_VERSION == 8 ]] && yarn add --dev --ignore-engines --ignore-scripts --ignore-workspace-root-check ts-node@8.x
           yarn test-ci
       - name: Compute test coverage
         uses: codecov/codecov-action@v1
