@@ -12,7 +12,7 @@ module.exports = {
     {
       files: ['scripts/**/*.ts'],
       parserOptions: {
-        project: ['../../tsconfig.json'],
+        project: ['../../tsconfig.dev.json'],
       },
     },
   ],

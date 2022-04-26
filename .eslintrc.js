@@ -24,9 +24,15 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['*.ts', '*.tsx', '*.d.ts', 'jest/**/*.ts', 'scripts/**/*.ts'],
+      files: ['*.ts', '*.tsx', '*.d.ts'],
       parserOptions: {
         project: ['tsconfig.json'],
+      },
+    },
+    {
+      files: ['jest/**/*.ts', 'scripts/**/*.ts'],
+      parserOptions: {
+        project: ['tsconfig.dev.json'],
       },
     },
     {
