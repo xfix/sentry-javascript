@@ -251,13 +251,12 @@ jobs:
         with:
           path: ${{ env.CACHED_BUILD_PATHS }}
           key: ${{ env.BUILD_CACHE_KEY }}
-      - name: Downgrade ts-node (Node 8 only)
-        if: ${{ matrix.node == 8 }}
-        run: yarn add -DW ts-node@8.x
       - name: Run tests
         env:
           NODE_VERSION: ${{ matrix.node }}
-        run: yarn test-ci
+        run: |
+          [[ $NODE_VERSION == 8 ]] && yarn add -DW ts-node@8.x
+          yarn test-ci
       - name: Compute test coverage
         uses: codecov/codecov-action@v1
 
