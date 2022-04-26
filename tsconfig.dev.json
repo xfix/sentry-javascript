@@ -1,0 +1,14 @@
+// TODO This should eventually end up as the tsconfig for a dev-utils package
+{
+  "extends": "./tsconfig.json",
+
+  "include": ["**/scripts/**/*.ts"],
+
+  "compilerOptions": {
+    // Setting `commonjs` here is necessary for ts-node to handle files with ESM imports (confusing but true). See
+    // https://github.com/TypeStrong/ts-node/issues/935.
+    "module": "commonjs",
+    "types": ["node", "jest"],
+    "esModuleInterop": true
+  }
+}
