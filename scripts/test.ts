@@ -51,9 +51,14 @@ if (nodeMajorVersion <= 10) {
 
     // TODO Pull this out once we switch to sucrase builds
     // Recompile as es5, so as not to have to fix a compatibility problem that will soon be moot
-    const baseTSConfig = 'packages/typescript/tsconfig.json';
-    fs.writeFileSync(baseTSConfig, String(fs.readFileSync(baseTSConfig)).replace('"target": "es6"', '"target": "es5"'));
-    run(`yarn build:dev ${ignorePackages.map(dep => `--ignore="${dep}"`).join(' ')}`);
+    if (!process.env.SUCRASE) {
+      const baseTSConfig = 'packages/typescript/tsconfig.json';
+      fs.writeFileSync(
+        baseTSConfig,
+        String(fs.readFileSync(baseTSConfig)).replace('"target": "es6"', '"target": "es5"'),
+      );
+      run(`yarn build:dev ${ignorePackages.map(dep => `--ignore="${dep}"`).join(' ')}`);
+    }
   }
   // Node 10
   else {
