@@ -15,6 +15,7 @@ const NODE_8_SKIP_TESTS_PACKAGES = [
   '@sentry/gatsby',
   '@sentry/serverless',
   '@sentry/nextjs',
+  '@sentry/angular',
 ];
 
 // We have to downgrade some of our dependencies in order to run tests in Node 8 and 10.
@@ -105,6 +106,12 @@ if (CURRENT_NODE_VERSION === '8') {
   // TODO Right now, this just skips incompatible tests, but it could be skipping more. See `skipNonNodeTests`'s
   // docstring.
   skipNonNodeTests();
+
+  if (!process.env.SUCRASE) {
+    const baseTSConfig = 'packages/typescript/tsconfig.json';
+    fs.writeFileSync(baseTSConfig, String(fs.readFileSync(baseTSConfig)).replace('"target": "es6"', '"target": "es5"'));
+    run(`yarn build:dev ${NODE_8_SKIP_TESTS_PACKAGES.map(dep => `--ignore="${dep}"`).join(' ')}`);
+  }
 
   runTests(NODE_8_SKIP_TESTS_PACKAGES);
 } else if (CURRENT_NODE_VERSION === '10') {
