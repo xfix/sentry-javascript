@@ -3,7 +3,7 @@ import { addInstrumentationHandler, isInstanceOf, isMatchingPattern } from '@sen
 import { Span } from '../span';
 import { getActiveTransaction, hasTracingEnabled } from '../utils';
 
-export const DEFAULT_TRACING_ORIGINS = ['localhost', /^\//];
+export const DEFAULT_TRACING_ORIGINS = [/^(https?):\/\/(localhost|127\.0\.0\.1)/, /^\//];
 
 /** Options for Request Instrumentation */
 export interface RequestInstrumentationOptions {
