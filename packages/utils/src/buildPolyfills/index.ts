@@ -1,5 +1,3 @@
-export type { RequireResult } from './types';
-
 export { _asyncNullishCoalesce } from './_asyncNullishCoalesce';
 export { _asyncOptionalChain } from './_asyncOptionalChain';
 export { _asyncOptionalChainDelete } from './_asyncOptionalChainDelete';
