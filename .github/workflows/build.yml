@@ -1,9 +1,9 @@
 name: 'Build & Test'
 on:
   push:
-    branches:
-      - master
-      - release/**
+    # branches:
+    #   - master
+    #   - release/**
   pull_request:
   workflow_dispatch:
     inputs:
@@ -113,7 +113,7 @@ jobs:
     strategy:
       matrix:
         trial: [1, 2, 3, 4, 5]
-        command: ['build:dev', 'build:dev:stream', 'build:dev:script', 'build:dev:typesrollup']
+        command: ['build:dev:stream', 'build:dev:typesrollup', 'build:dev:runptypesrollup']
     steps:
       - name: Check out current commit (${{ env.HEAD_COMMIT }})
         uses: actions/checkout@v2

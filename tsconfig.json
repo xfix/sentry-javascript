@@ -9,9 +9,9 @@
     "allowSyntheticDefaultImports": true,
     "types": ["node"],
     "noErrorTruncation": true, // move me up to @sentry/typescript
-    // "skipLibCheck": true,
-    "extendedDiagnostics": true,
-    "listFilesOnly": true,
+    "skipLibCheck": true,
+    // "extendedDiagnostics": true,
+    // "listFilesOnly": true,
     // "traceResolution": true
   }
 }
