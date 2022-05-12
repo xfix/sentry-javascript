@@ -35,12 +35,15 @@ export function makeLicensePlugin(title) {
  * Create a plugin to set the value of the `__SENTRY_DEBUG__` magic string.
  *
  * @param includeDebugging Whether or not the resulting build should include log statements
- * @returns An instance of the `replace` plugin to do the replacement of the magic string with `true` or 'false`
+ * @returns An instance of the `@rollup/plugin-replace` plugin to do the replacement of the magic string with `true` or
+ * 'false`
  */
 export function makeIsDebugBuildPlugin(includeDebugging) {
   return replace({
-    // __SENTRY_DEBUG__ should be save to replace in any case, so no checks for assignments necessary
-    preventAssignment: false,
+    // TODO `preventAssignment` will default to true in version 5.x of the replace plugin, at which point we can get rid
+    // of this. (It actually makes no difference in this case whether it's true or false, since we never assign to
+    // `__SENTRY_DEBUG__`, but if we don't give it a value, it will spam with warnings.)
+    preventAssignment: true,
     values: {
       __SENTRY_DEBUG__: includeDebugging,
     },
