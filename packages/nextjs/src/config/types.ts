@@ -20,6 +20,9 @@ export type NextConfigObject = {
   sentry?: {
     disableServerWebpackPlugin?: boolean;
     disableClientWebpackPlugin?: boolean;
+
+    // Use `hidden-source-map` for webpack `devtool` option, which strips the `sourceMappingURL` from the bottom of
+    // built JS files
     hideSourceMaps?: boolean;
 
     // Upload files from `<distDir>/static/chunks` rather than `<distDir>/static/chunks/pages`. Usually files outside of
