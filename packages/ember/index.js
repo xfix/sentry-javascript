@@ -2,7 +2,8 @@
 const fs = require('fs');
 
 function readSnippet(fileName) {
-  return `<script>${fs.readFileSync(`${__dirname}/vendor/${fileName}`, 'utf8')}</script>`;
+  const scriptContents = fs.readFileSync(`${__dirname}/vendor/${fileName}`, 'utf8');
+  return `<script>${scriptContents}</script>`;
 }
 
 module.exports = {
