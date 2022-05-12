@@ -488,7 +488,7 @@ describe('webpack config', () => {
 
       expect(finalWebpackConfig.entry).toEqual(
         expect.objectContaining({
-          // was 'next-client-pages-loader?page=%2F_app', and now has client config but not`RewriteFrames` helper injected
+          // was 'next-client-pages-loader?page=%2F_app', and now has client config but not `RewriteFrames` helper injected
           'pages/_app': [clientConfigFilePath, 'next-client-pages-loader?page=%2F_app'],
         }),
       );
