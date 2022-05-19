@@ -106,6 +106,8 @@ jobs:
           echo "Saving SDK_VERSION for later"
           cat packages/core/src/version.ts | awk -F"'" '{print $2}' > dist-serverless/version
           [ ! -z $(cat dist-serverless/version) ] && echo SDK_VERSION=$(cat dist-serverless/version) || (echo "Version extraction failed" && exit 1)
+      - name: Temporary fix for lambda file upload
+        run: rm -rf dist-serverless
     outputs:
       # this needs to be passed on, because the `needs` context only looks at direct ancestors (so steps which depend on
       # `job_build` can't see `job_install_deps` and what it returned)
@@ -134,6 +136,8 @@ jobs:
         with:
           path: ${{ env.CACHED_BUILD_PATHS }}
           key: ${{ env.BUILD_CACHE_KEY }}
+      - name: Temporary fix for lambda file upload
+        run: pushd packages/serverless && yarn build:awslambda-layer && popd
       - name: Get SDK version
         run: |
           export SDK_VERSION=$(cat dist-serverless/version)
