@@ -167,7 +167,7 @@ jobs:
         uses: getsentry/action-build-aws-lambda-extension@kmclb-simplify-getting-files
         with:
           artifact_name: ${{ env.HEAD_COMMIT }}
-          zip_file_name: sentry-node-serverless-${{ env.SDK_VERSION }}.zip
+          zip_file_name: sentry-node-serverless-$SDK_VERSION.zip
           dist_serverless_path: packages/serverless/build/aws/dist-serverless
           # build_cache_paths: ${{ env.CACHED_BUILD_PATHS }}
           # build_cache_key: ${{ env.BUILD_CACHE_KEY }}
