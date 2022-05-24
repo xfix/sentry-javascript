@@ -160,9 +160,9 @@ jobs:
         run: |
           export SDK_VERSION=$(cat packages/core/package.json | jq --raw-output '.version')
           echo "SDK_VERSION=$SDK_VERSION" | tee -a $GITHUB_ENV
-      - name: Move dist-serverless to root directory (requirement for zipping action)
-        run: |
-          mv ./packages/serverless/build/aws/dist-serverless .
+      # - name: Move dist-serverless to root directory (requirement for zipping action)
+      #   run: |
+      #     mv ./packages/serverless/build/aws/dist-serverless .
       - name: Create and upload final zip file
         uses: getsentry/action-build-aws-lambda-extension@kmclb-simplify-getting-files
         with:
