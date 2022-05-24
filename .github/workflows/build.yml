@@ -162,7 +162,7 @@ jobs:
         run: |
           mv ./packages/serverless/build/aws/dist-serverless .
       - name: Create and upload final zip file
-        uses: getsentry/action-build-aws-lambda-extension@v1
+        uses: getsentry/action-build-aws-lambda-extension@kmclb-simplify-getting-files
         with:
           artifact_name: ${{ env.HEAD_COMMIT }}
           zip_file_name: sentry-node-serverless-${{ env.SDK_VERSION }}.zip
