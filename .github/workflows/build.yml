@@ -1,9 +1,9 @@
 name: 'Build & Test'
 on:
   push:
-    branches:
-      - master
-      - release/**
+    # branches:
+    #   - master
+    #   - release/**
   pull_request:
   workflow_dispatch:
     inputs:
@@ -180,7 +180,7 @@ jobs:
     needs: job_build
     runs-on: ubuntu-latest
     # Build artifacts are only needed for releasing workflow.
-    if: startsWith(github.ref, 'refs/heads/release/')
+    # if: startsWith(github.ref, 'refs/heads/release/')
     steps:
       - name: Check out current commit (${{ github.sha }})
         uses: actions/checkout@v2
