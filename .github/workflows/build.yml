@@ -166,8 +166,8 @@ jobs:
         with:
           artifact_name: ${{ env.HEAD_COMMIT }}
           zip_file_name: sentry-node-serverless-${{ env.SDK_VERSION }}.zip
-          build_cache_paths: ${{ env.CACHED_BUILD_PATHS }}
-          build_cache_key: ${{ env.BUILD_CACHE_KEY }}
+          # build_cache_paths: ${{ env.CACHED_BUILD_PATHS }}
+          # build_cache_key: ${{ env.BUILD_CACHE_KEY }}
 
   job_size_check:
     name: Size Check
