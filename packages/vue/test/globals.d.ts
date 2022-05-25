@@ -7,4 +7,4 @@
  * replaced.
  */
 
-declare var __DEBUG_BUILD__: boolean;
+declare const __DEBUG_BUILD__: boolean;
