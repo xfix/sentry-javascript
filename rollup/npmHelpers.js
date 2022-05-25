@@ -82,11 +82,11 @@ export function makeBaseNPMConfig(options = {}) {
     plugins: [
       nodeResolvePlugin,
       sucrasePlugin,
+      debugBuildStatementReplacePlugin,
       constToVarPlugin,
       removeESLintCommentsPlugin,
       removeBlankLinesPlugin,
       extractPolyfillsPlugin,
-      debugBuildStatementReplacePlugin,
     ],
 
     // don't include imported modules from outside the package in the final output
