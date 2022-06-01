@@ -8,11 +8,11 @@ import * as http from 'http';
 import { NodeClient } from './client';
 import {
   addExpressReqToTransaction,
+  addRequestDataToEvent,
+  AddRequestDataToEventOptions,
   ExpressRequest as _ExpressRequest,
   extractExpressTransactionName,
   extractRequestData as _extractRequestData,
-  parseRequest as _parseRequest,
-  ParseRequestOptions as _ParseRequestOptions,
 } from './requestdata';
 import { flush, isAutoSessionTrackingEnabled } from './sdk';
 
@@ -71,7 +71,7 @@ export function tracingHandler(): (
   };
 }
 
-export type RequestHandlerOptions = ParseRequestOptions & {
+export type RequestHandlerOptions = AddRequestDataToEventOptions & {
   flushTimeout?: number;
 };
 
@@ -123,7 +123,7 @@ export function requestHandler(
       const currentHub = getCurrentHub();
 
       currentHub.configureScope(scope => {
-        scope.addEventProcessor((event: Event) => parseRequest(event, req, options));
+        scope.addEventProcessor((event: Event) => addRequestDataToEvent(event, req, options));
         const client = currentHub.getClient<NodeClient>();
         if (isAutoSessionTrackingEnabled(client)) {
           const scope = currentHub.getScope();
@@ -244,9 +244,9 @@ export function errorHandler(options?: {
 // TODO (v8): Remove this
 /**
  * Options deciding what parts of the request to use when enhancing an event
- * @deprecated `Handlers.ParseRequestOptions` is deprecated.Use `ParseRequestOptions` instead
+ * @deprecated `Handlers.ParseRequestOptions` is deprecated.Use `AddRequestDataToEventOptions` instead
  */
-export type ParseRequestOptions = _ParseRequestOptions;
+export type ParseRequestOptions = AddRequestDataToEventOptions;
 
 // TODO (v8): Remove this
 /**
@@ -255,12 +255,12 @@ export type ParseRequestOptions = _ParseRequestOptions;
  * @param event Will be mutated and enriched with req data
  * @param req Request object
  * @param options object containing flags to enable functionality
- * @deprecated `Handlers.parseRequest` is deprecated. Use `parseRequest` instead.
+ * @deprecated `Handlers.parseRequest` is deprecated. Use `addRequestDataToEvent` instead.
  * @hidden
  */
 // eslint-disable-next-line deprecation/deprecation
 export function parseRequest(event: Event, req: ExpressRequest, options?: ParseRequestOptions): Event {
-  return _parseRequest(event, req, options);
+  return addRequestDataToEvent(event, req, options);
 }
 
 // TODO (v8): Remove this
