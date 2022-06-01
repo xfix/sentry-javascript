@@ -16,6 +16,7 @@ export type {
   User,
 } from '@sentry/types';
 
+export type { ParseRequestOptions, ExpressRequest } from './requestdata';
 export type { NodeOptions } from './types';
 
 export {
@@ -46,6 +47,7 @@ export { NodeClient } from './client';
 export { makeNodeTransport } from './transports';
 export { defaultIntegrations, init, defaultStackParser, lastEventId, flush, close, getSentryRelease } from './sdk';
 export { deepReadDirSync } from './utils';
+export { parseRequest, extractRequestData } from './requestdata';
 
 import { Integrations as CoreIntegrations } from '@sentry/core';
 import { getMainCarrier } from '@sentry/hub';
