@@ -63,3 +63,9 @@ export interface WorkerLocation {
 }
 
 export type Primitive = number | string | boolean | bigint | symbol | null | undefined;
+
+// This is a hack to placate TS, relying on the fact that technically, arrays are objects with integer keys. Normally we
+// think of those keys as actual numbers, but `arr['0']` turns out to work just as well as `arr[0]`, and doing it this
+// way lets us use a single type in the places where we want to behave as if we're only dealing with objects, even if
+// some of those object might technically be arrays.
+export type ObjOrArray<T> = { [key: string]: T };

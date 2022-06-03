@@ -1,16 +1,10 @@
-import { Primitive } from '@sentry/types';
+import { ObjOrArray, Primitive } from '@sentry/types';
 
 import { isNaN, isSyntheticEvent } from './is';
-import { memoBuilder, MemoFunc } from './memo';
 import { convertToPlainObject } from './object';
 import { getFunctionName } from './stacktrace';
 
 type Prototype = { constructor: (...args: unknown[]) => unknown };
-// This is a hack to placate TS, relying on the fact that technically, arrays are objects with integer keys. Normally we
-// think of those keys as actual numbers, but `arr['0']` turns out to work just as well as `arr[0]`, and doing it this
-// way lets us use a single type in the places where behave as if we are only dealing with objects, even if some of them
-// might be arrays.
-type ObjOrArray<T> = { [key: string]: T };
 
 /**
  * Recursively normalizes the given object.
@@ -66,17 +60,16 @@ export function normalizeToSize<T>(
  * @param value The node to be visited
  * @param depth Optional number indicating the maximum recursion depth
  * @param maxProperties Optional maximum number of properties/elements included in any single object/array
- * @param memo Optional Memo class handling decycling
+ * @param memoizer Optional Memo class handling decycling
  */
 function visit(
   key: string,
   value: unknown,
   depth: number = +Infinity,
   maxProperties: number = +Infinity,
-  memo: MemoFunc = memoBuilder(),
+  memoizer: Map<unknown, Primitive | ObjOrArray<unknown>> = new Map(),
+  preserveCircularReferences: boolean = false,
 ): Primitive | ObjOrArray<unknown> {
-  const [memoize, unmemoize] = memo;
-
   // If the value has a `toJSON` method, see if we can bail and let it do the work
   const valueWithToJSON = value as unknown & { toJSON?: () => Primitive | ObjOrArray<unknown> };
   if (valueWithToJSON && typeof valueWithToJSON.toJSON === 'function') {
@@ -115,18 +108,19 @@ function visit(
     return stringified.replace('object ', '');
   }
 
-  // If we've already visited this branch, bail out, as it's circular reference. If not, note that we're seeing it now.
-  if (memoize(value)) {
-    return '[Circular ~]';
+  // If we've already visited this branch, bail out, as it's circular reference.
+  if (memoizer.has(value)) {
+    return preserveCircularReferences ? memoizer.get(value) : '[Circular ~]';
   }
 
   // At this point we know we either have an object or an array, we haven't seen it before, and we're going to recurse
   // because we haven't yet reached the max depth. Create an accumulator to hold the results of visiting each
-  // property/entry, and keep track of the number of items we add to it.
+  // property/entry, and keep track of the number of items we add to it. Also, add both to our memoizer.
   const normalized = (Array.isArray(value) ? [] : {}) as ObjOrArray<unknown>;
   let numAdded = 0;
+  memoizer.set(value, normalized);
 
-  // Before we begin, convert`Error` and`Event` instances into plain objects, since some of each of their relevant
+  // Before we begin, convert `Error` and `Event` instances into plain objects, since some of each of their relevant
   // properties are non-enumerable and otherwise would get missed.
   const visitable = convertToPlainObject(value as ObjOrArray<unknown>);
 
@@ -143,19 +137,20 @@ function visit(
 
     // Recursively visit all the child nodes
     const visitValue = visitable[visitKey];
-    normalized[visitKey] = visit(visitKey, visitValue, depth - 1, maxProperties, memo);
+    normalized[visitKey] = visit(visitKey, visitValue, depth - 1, maxProperties, memoizer, preserveCircularReferences);
 
     numAdded += 1;
   }
 
-  // Once we've visited all the branches, remove the parent from memo storage
-  unmemoize(value);
+  // Once we've finished recursing, remove the parent from memo storage. (This is necessary so that if we see the same
+  // value elsewhere, as part of another branch, we won't mistakenly think we've hit a circular reference.)
+  memoizer.delete(value);
 
   // Return accumulated values
   return normalized;
 }
 
-// TODO remove this in v7 (this means the method will no longer be exported, under any name)
+// TODO (v8): remove this (this means the method will no longer be exported, under any name)
 export { visit as walk };
 
 /**
