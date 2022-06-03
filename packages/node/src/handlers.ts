@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { captureException, getCurrentHub, startTransaction, withScope } from '@sentry/core';
 import { Event, ExtractedNodeRequestData, Span } from '@sentry/types';
-import { extractTraceparentData, isString, logger, parseBaggageString } from '@sentry/utils';
-import * as domain from 'domain';
-import * as http from 'http';
-
-import { NodeClient } from './client';
 import {
   addExpressReqToTransaction,
   addRequestDataToEvent,
@@ -13,7 +8,15 @@ import {
   ExpressRequest as _ExpressRequest,
   extractExpressTransactionName,
   extractRequestData as _extractRequestData,
-} from './requestdata';
+  extractTraceparentData,
+  isString,
+  logger,
+  parseBaggageString,
+} from '@sentry/utils';
+import * as domain from 'domain';
+import * as http from 'http';
+
+import { NodeClient } from './client';
 import { flush, isAutoSessionTrackingEnabled } from './sdk';
 
 /**

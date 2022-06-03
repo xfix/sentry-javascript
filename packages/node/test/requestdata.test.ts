@@ -1,11 +1,11 @@
 /* eslint-disable deprecation/deprecation */
 // TODO (v8): Remove eslint deprecation disabling above
 
+import { addRequestDataToEvent, ExpressRequest, extractRequestData as newExtractRequestData } from '@sentry/utils';
 import * as net from 'net';
 
 import { Event, Request, User } from '../src';
 import { extractRequestData as oldExtractRequestData, parseRequest } from '../src/handlers';
-import { addRequestDataToEvent, ExpressRequest, extractRequestData as newExtractRequestData } from '../src/requestdata';
 
 // TODO (v8): Remove `describe.each` wrapper and remove `parseRequest`
 describe.each([parseRequest, addRequestDataToEvent])(

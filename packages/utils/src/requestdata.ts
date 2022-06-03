@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Event, ExtractedNodeRequestData, Transaction } from '@sentry/types';
-import { isPlainObject, isString, normalize, stripUrlQueryAndFragment } from '@sentry/utils';
 import * as cookie from 'cookie';
 import * as url from 'url';
+
+import { isPlainObject, isString } from './is';
+import { stripUrlQueryAndFragment } from './misc';
+import { normalize } from './normalize';
 
 export interface ExpressRequest {
   baseUrl?: string;

@@ -16,7 +16,7 @@ export type {
   User,
 } from '@sentry/types';
 
-export type { AddRequestDataToEventOptions, ExpressRequest } from './requestdata';
+export type { AddRequestDataToEventOptions, ExpressRequest } from '@sentry/utils';
 export type { NodeOptions } from './types';
 
 export {
@@ -42,12 +42,12 @@ export {
   setUser,
   withScope,
 } from '@sentry/core';
+export { addRequestDataToEvent, extractRequestData } from '@sentry/utils';
 
 export { NodeClient } from './client';
 export { makeNodeTransport } from './transports';
 export { defaultIntegrations, init, defaultStackParser, lastEventId, flush, close, getSentryRelease } from './sdk';
 export { deepReadDirSync } from './utils';
-export { addRequestDataToEvent, extractRequestData } from './requestdata';
 
 import { Integrations as CoreIntegrations } from '@sentry/core';
 import { getMainCarrier } from '@sentry/hub';

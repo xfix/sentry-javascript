@@ -111,11 +111,12 @@ describe('requestHandler', () => {
     });
   });
 
-  it('patches `res.end` when `flushTimeout` is specified', () => {
+  it.only('patches `res.end` when `flushTimeout` is specified', () => {
     const flush = jest.spyOn(SDK, 'flush').mockResolvedValue(true);
 
     const sentryRequestMiddleware = requestHandler({ flushTimeout: 1337 });
     sentryRequestMiddleware(req, res, next);
+    debugger;
     res.end('ok');
 
     setImmediate(() => {
