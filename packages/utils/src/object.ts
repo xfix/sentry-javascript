@@ -1,10 +1,11 @@
 /* eslint-disable max-lines */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { WrappedFunction } from '@sentry/types';
+import { ObjOrArray, Primitive, WrappedFunction } from '@sentry/types';
 
 import { htmlTreeAsString } from './browser';
-import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive } from './is';
-import { memoBuilder, MemoFunc } from './memo';
+import { isElement, isError, isEvent, isInstanceOf, isPrimitive } from './is';
+// import { isElement, isError, isEvent, isInstanceOf, isPlainObject, isPrimitive } from './is';
+// import { memoBuilder, MemoFunc } from './memo';
 import { truncate } from './string';
 
 /**
@@ -203,6 +204,10 @@ export function extractExceptionKeysForMessage(exception: Record<string, unknown
   return '';
 }
 
+function defaultBailBeforeRecursion<T>(_key: string, value: T, _options: VisitOptions): T | undefined {
+  return isPrimitive(value) ? value : undefined;
+}
+
 /**
  * Given any object, return the new object with removed keys that value was `undefined`.
  * Works recursively on objects and arrays.
@@ -210,36 +215,7 @@ export function extractExceptionKeysForMessage(exception: Record<string, unknown
  * Attention: This function keeps circular references in the returned object.
  */
 export function dropUndefinedKeys<T>(val: T): T {
-  // This function just proxies `_dropUndefinedKeys` to keep the `memoBuilder` out of this function's API
-  return _dropUndefinedKeys(val, memoBuilder());
-}
-
-function _dropUndefinedKeys<T>(val: T, memo: MemoFunc): T {
-  const [memoize] = memo; // we don't need unmemoize because we don't need to visit nodes twice
-
-  if (isPlainObject(val)) {
-    if (memoize(val)) {
-      return val;
-    }
-    const rv: { [key: string]: any } = {};
-    for (const key of Object.keys(val)) {
-      if (typeof val[key] !== 'undefined') {
-        rv[key] = _dropUndefinedKeys(val[key], memo);
-      }
-    }
-    return rv as T;
-  }
-
-  if (Array.isArray(val)) {
-    if (memoize(val)) {
-      return val;
-    }
-    return (val as any[]).map(item => {
-      return _dropUndefinedKeys(item, memo);
-    }) as any;
-  }
-
-  return val;
+  return visit('', val, { filter: (_key, value) => value === undefined });
 }
 
 /**
@@ -278,3 +254,87 @@ export function objectify(wat: unknown): typeof Object {
   }
   return objectified;
 }
+
+export type VisitOptions = {
+  depth?: number;
+  maxProperties?: number;
+  memoizer?: Map<unknown, Primitive | ObjOrArray<unknown>>;
+  preserveCircularReferences?: boolean;
+  bailBeforeRecursion?: <T>(key: string, value: T, options: VisitOptions) => T | undefined;
+  filter?: (key: string, value: unknown) => boolean;
+};
+
+// TODO Fix this docstring for options change
+/**
+ * Visits a node to perform processing on it
+ *
+ * @param key The key corresponding to the given node
+ * @param value The node to be visited
+ * @param depth Optional number indicating the maximum recursion depth
+ * @param maxProperties Optional maximum number of properties/elements included in any single object/array
+ * @param memoizer Optional Memo class handling decycling
+ * @param preserveCircularReferences If false, the string '[Circular ~]' will be substituted for any circular references
+ * @param bailBeforeRecursion A function to handle all cases in which recursion should not happen. Returns the value
+ * with which to bail, or undefined if recursion should continue.
+ * @param filter A function to decide if a child node should be included in the processed version of the current node
+ */
+export function visit<T>(key: string, value: T, options: VisitOptions = {}): T {
+  const {
+    depth = +Infinity,
+    maxProperties = +Infinity,
+    memoizer = new Map(),
+    preserveCircularReferences = true,
+    bailBeforeRecursion = defaultBailBeforeRecursion,
+    filter = () => true,
+  } = options;
+
+  const bailValue = bailBeforeRecursion<T>(key, value, options);
+  if (bailValue !== undefined) {
+    return bailValue;
+  }
+
+  // If we make it to this point, we know we have either an object or an array.
+  const origValue = value as unknown as ObjOrArray<unknown>;
+
+  // Create an accumulator to hold the results of visiting each node, and add both it and the original value to our
+  // memoizer.
+  const processed = (Array.isArray(origValue) ? [] : {}) as ObjOrArray<unknown>;
+  memoizer.set(origValue, processed);
+
+  // Before we begin, convert `Error` and `Event` instances into plain objects, since some of each of their relevant
+  // properties are non-enumerable and otherwise would get missed.
+  const visitable = convertToPlainObject(origValue as ObjOrArray<unknown>);
+
+  // eslint-disable-next-line guard-for-in
+  for (const visitKey in visitable) {
+    const visitValue = visitable[visitKey];
+
+    if (!filter(visitKey, visitValue)) {
+      continue;
+    }
+
+    if (Object.keys(processed).length >= maxProperties) {
+      processed[visitKey] = '[MaxProperties ~]';
+      break;
+    }
+
+    // Recursively visit all the child nodes
+    processed[visitKey] = visit(visitKey, visitValue, {
+      depth: depth - 1,
+      maxProperties,
+      memoizer,
+      preserveCircularReferences,
+      bailBeforeRecursion,
+    });
+  }
+
+  // Once we've finished recursing, remove the parent from memo storage. (This is necessary so that if we see the same
+  // value elsewhere, as part of another branch, we won't mistakenly think we've hit a circular reference.)
+  memoizer.delete(value);
+
+  // Return accumulated values
+  return processed as unknown as T;
+}
+
+// TODO (v8): remove this (this means the method will no longer be exported, under any name)
+export { visit as walk };

@@ -1,7 +1,7 @@
 import { ObjOrArray, Primitive } from '@sentry/types';
 
 import { isNaN, isSyntheticEvent } from './is';
-import { convertToPlainObject } from './object';
+import { visit, VisitOptions } from './object';
 import { getFunctionName } from './stacktrace';
 
 type Prototype = { constructor: (...args: unknown[]) => unknown };
@@ -29,7 +29,12 @@ type Prototype = { constructor: (...args: unknown[]) => unknown };
 export function normalize(input: unknown, depth: number = +Infinity, maxProperties: number = +Infinity): any {
   try {
     // since we're at the outermost level, we don't provide a key
-    return visit('', input, depth, maxProperties);
+    return visit('', input, {
+      depth,
+      maxProperties,
+      preserveCircularReferences: false,
+      bailBeforeRecursion: bailBeforeNormalizeRecursion,
+    });
   } catch (err) {
     return { ERROR: `**non-serializable** (${err})` };
   }
@@ -53,23 +58,13 @@ export function normalizeToSize<T>(
   return normalized as T;
 }
 
-/**
- * Visits a node to perform normalization on it
- *
- * @param key The key corresponding to the given node
- * @param value The node to be visited
- * @param depth Optional number indicating the maximum recursion depth
- * @param maxProperties Optional maximum number of properties/elements included in any single object/array
- * @param memoizer Optional Memo class handling decycling
- */
-function visit(
+function bailBeforeNormalizeRecursion<T>(
   key: string,
-  value: unknown,
-  depth: number = +Infinity,
-  maxProperties: number = +Infinity,
-  memoizer: Map<unknown, Primitive | ObjOrArray<unknown>> = new Map(),
-  preserveCircularReferences: boolean = false,
-): Primitive | ObjOrArray<unknown> {
+  value: T,
+  options: VisitOptions,
+): T | Primitive | ObjOrArray<unknown> {
+  const { depth = +Infinity, memoizer = new Map(), preserveCircularReferences = false } = options;
+
   // If the value has a `toJSON` method, see if we can bail and let it do the work
   const valueWithToJSON = value as unknown & { toJSON?: () => Primitive | ObjOrArray<unknown> };
   if (valueWithToJSON && typeof valueWithToJSON.toJSON === 'function') {
@@ -82,7 +77,7 @@ function visit(
 
   // Get the simple cases out of the way first
   if (value === null || (['number', 'boolean', 'string'].includes(typeof value) && !isNaN(value))) {
-    return value as Primitive;
+    return value as unknown as Primitive;
   }
 
   const stringified = stringifyValue(key, value);
@@ -94,6 +89,7 @@ function visit(
   }
 
   // From here on, we can assert that `value` is either an object or an array.
+  const;
 
   // Do not normalize objects that we know have already been normalized. As a general rule, the
   // "__sentry_skip_normalization__" property should only be used sparingly and only should only be set on objects that
@@ -113,45 +109,9 @@ function visit(
     return preserveCircularReferences ? memoizer.get(value) : '[Circular ~]';
   }
 
-  // At this point we know we either have an object or an array, we haven't seen it before, and we're going to recurse
-  // because we haven't yet reached the max depth. Create an accumulator to hold the results of visiting each
-  // property/entry, and keep track of the number of items we add to it. Also, add both to our memoizer.
-  const normalized = (Array.isArray(value) ? [] : {}) as ObjOrArray<unknown>;
-  let numAdded = 0;
-  memoizer.set(value, normalized);
-
-  // Before we begin, convert `Error` and `Event` instances into plain objects, since some of each of their relevant
-  // properties are non-enumerable and otherwise would get missed.
-  const visitable = convertToPlainObject(value as ObjOrArray<unknown>);
-
-  for (const visitKey in visitable) {
-    // Avoid iterating over fields in the prototype if they've somehow been exposed to enumeration.
-    if (!Object.prototype.hasOwnProperty.call(visitable, visitKey)) {
-      continue;
-    }
-
-    if (numAdded >= maxProperties) {
-      normalized[visitKey] = '[MaxProperties ~]';
-      break;
-    }
-
-    // Recursively visit all the child nodes
-    const visitValue = visitable[visitKey];
-    normalized[visitKey] = visit(visitKey, visitValue, depth - 1, maxProperties, memoizer, preserveCircularReferences);
-
-    numAdded += 1;
-  }
-
-  // Once we've finished recursing, remove the parent from memo storage. (This is necessary so that if we see the same
-  // value elsewhere, as part of another branch, we won't mistakenly think we've hit a circular reference.)
-  memoizer.delete(value);
-
-  // Return accumulated values
-  return normalized;
+  // Otherwise, don't bail
+  return undefined;
 }
-
-// TODO (v8): remove this (this means the method will no longer be exported, under any name)
-export { visit as walk };
 
 /**
  * Stringify the given value. Handles various known special values and types.
