@@ -494,6 +494,9 @@ export abstract class BaseClient<O extends ClientOptions> implements Client<O> {
       ...(event.extra && {
         extra: normalize(event.extra, depth, maxBreadth),
       }),
+      ...(event.spans && {
+        spans: normalizeDataPropInObjArray(event.spans),
+      }),
     };
 
     // event.contexts.trace stores information about a Transaction. Similarly,
@@ -510,17 +513,6 @@ export abstract class BaseClient<O extends ClientOptions> implements Client<O> {
       if (event.contexts.trace.data) {
         normalized.contexts.trace.data = normalize(event.contexts.trace.data, depth, maxBreadth);
       }
-    }
-
-    // event.spans[].data may contain circular/dangerous data so we need to normalize it
-    if (event.spans) {
-      normalized.spans = event.spans.map(span => {
-        // We cannot use the spread operator here because `toJSON` on `span` is non-enumerable
-        if (span.data) {
-          span.data = normalize(span.data, depth, maxBreadth);
-        }
-        return span;
-      });
     }
 
     return normalized;
