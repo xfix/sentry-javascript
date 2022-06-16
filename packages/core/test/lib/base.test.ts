@@ -1,5 +1,5 @@
 import { Hub, makeSession, Scope } from '@sentry/hub';
-import { Event, Span } from '@sentry/types';
+import { Event } from '@sentry/types';
 import { dsnToString, logger, SentryError, SyncPromise } from '@sentry/utils';
 
 import * as integrationModule from '../../src/integration';
@@ -833,60 +833,6 @@ describe('BaseClient', () => {
           user: normalizedObject,
         }),
       );
-    });
-
-    test('normalization applies to Transaction and Span consistently', () => {
-      expect.assertions(1);
-
-      const options = getDefaultTestClientOptions({ dsn: PUBLIC_DSN });
-      const client = new TestClient(options);
-      const transaction: Event = {
-        contexts: {
-          trace: {
-            data: { _sentry_web_vitals: { LCP: { value: 99.9 } } },
-            op: 'pageload',
-            span_id: 'a3df84a60c2e4e76',
-            trace_id: '86f39e84263a4de99c326acab3bfe3bd',
-          },
-        },
-        environment: 'production',
-        event_id: '972f45b826a248bba98e990878a177e1',
-        spans: [
-          {
-            data: { _sentry_extra_metrics: { M1: { value: 1 }, M2: { value: 2 } } },
-            description: 'first-paint',
-            endTimestamp: 1591603196.637835,
-            op: 'paint',
-            parentSpanId: 'a3df84a60c2e4e76',
-            spanId: '9e15bf99fbe4bc80',
-            startTimestamp: 1591603196.637835,
-            traceId: '86f39e84263a4de99c326acab3bfe3bd',
-          } as unknown as Span,
-          {
-            description: 'first-contentful-paint',
-            endTimestamp: 1591603196.637835,
-            op: 'paint',
-            parentSpanId: 'a3df84a60c2e4e76',
-            spanId: 'aa554c1f506b0783',
-            startTimestamp: 1591603196.637835,
-            traceId: '86f39e84263a4de99c326acab3bfe3bd',
-          } as any as Span,
-        ],
-        start_timestamp: 1591603196.614865,
-        timestamp: 1591603196.728485,
-        transaction: '/',
-        type: 'transaction',
-      };
-      // To be consistent, normalization could apply either to both transactions
-      // and spans, or to none. So far the decision is to skip normalization for
-      // both, such that the expected normalizedTransaction is the same as the
-      // input transaction.
-      const normalizedTransaction = JSON.parse(JSON.stringify(transaction)); // deep-copy
-
-      client.captureEvent(transaction);
-      const capturedEvent = TestClient.instance!.event!;
-
-      expect(capturedEvent).toEqual(normalizedTransaction);
     });
 
     test('calls beforeSend and uses original event without any changes', () => {
