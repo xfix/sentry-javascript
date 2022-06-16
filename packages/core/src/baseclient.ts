@@ -499,22 +499,6 @@ export abstract class BaseClient<O extends ClientOptions> implements Client<O> {
       }),
     };
 
-    // event.contexts.trace stores information about a Transaction. Similarly,
-    // event.spans[] stores information about child Spans. Given that a
-    // Transaction is conceptually a Span, normalization should apply to both
-    // Transactions and Spans consistently.
-    // For now the decision is to skip normalization of Transactions and Spans,
-    // so this block overwrites the normalized event to add back the original
-    // Transaction information prior to normalization.
-    if (event.contexts && event.contexts.trace && normalized.contexts) {
-      normalized.contexts.trace = event.contexts.trace;
-
-      // event.contexts.trace.data may contain circular/dangerous data so we need to normalize it
-      if (event.contexts.trace.data) {
-        normalized.contexts.trace.data = normalize(event.contexts.trace.data, depth, maxBreadth);
-      }
-    }
-
     return normalized;
   }
 
