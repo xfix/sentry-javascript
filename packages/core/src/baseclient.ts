@@ -468,15 +468,22 @@ export abstract class BaseClient<O extends ClientOptions> implements Client<O> {
       return null;
     }
 
+    /** Apply normalization to the `data` property belonging to each member of an array of objects */
+    function normalizeDataPropInObjArray<T>(
+      array: Array<T & { data?: { [key: string]: unknown } }>,
+    ): Array<T & { data?: { [key: string]: unknown } }> {
+      return array.map(objWithData => ({
+        ...objWithData,
+        ...(objWithData.data && {
+          data: normalize(objWithData.data, depth, maxBreadth),
+        }),
+      }));
+    }
+
     const normalized: Event = {
       ...event,
       ...(event.breadcrumbs && {
-        breadcrumbs: event.breadcrumbs.map(b => ({
-          ...b,
-          ...(b.data && {
-            data: normalize(b.data, depth, maxBreadth),
-          }),
-        })),
+        breadcrumbs: normalizeDataPropInObjArray(event.breadcrumbs),
       }),
       ...(event.user && {
         user: normalize(event.user, depth, maxBreadth),
