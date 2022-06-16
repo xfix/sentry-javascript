@@ -77,6 +77,11 @@ function visit(
 ): Primitive | ObjOrArray<unknown> {
   const [memoize, unmemoize] = memo;
 
+  // `data` objects get special treatment because we want to normalize them as if they were top-level attributes, lest
+  // we cut them off at too shallow a depth. All of the `data` objects which the SDK adds are either 2 or 3 levels from
+  // the top, so we give them an extra 3 levels to play with.
+  const depthRemaining = key === 'data' ? depth + 3 : depth;
+
   // If the value has a `toJSON` method, see if we can bail and let it do the work
   const valueWithToJSON = value as unknown & { toJSON?: () => Primitive | ObjOrArray<unknown> };
   if (valueWithToJSON && typeof valueWithToJSON.toJSON === 'function') {
@@ -110,7 +115,7 @@ function visit(
   }
 
   // We're also done if we've reached the max depth
-  if (depth === 0) {
+  if (depthRemaining === 0) {
     // At this point we know `serialized` is a string of the form `"[object XXXX]"`. Clean it up so it's just `"[XXXX]"`.
     return stringified.replace('object ', '');
   }
@@ -143,7 +148,7 @@ function visit(
 
     // Recursively visit all the child nodes
     const visitValue = visitable[visitKey];
-    normalized[visitKey] = visit(visitKey, visitValue, depth - 1, maxProperties, memo);
+    normalized[visitKey] = visit(visitKey, visitValue, depthRemaining - 1, maxProperties, memo);
 
     numAdded += 1;
   }
